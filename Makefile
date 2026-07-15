@@ -13,4 +13,4 @@ validate:
 	./scripts/validate.sh
 
 docker:
-	docker build -t omni-infra-provider-vergeos:alpha .
+	docker build -t omni-infra-provider-vergeos:local .

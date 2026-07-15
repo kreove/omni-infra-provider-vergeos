@@ -1,13 +1,21 @@
 services:
   omni-infra-provider-vergeos:
-    build:
-      context: ..
+    image: ${PROVIDER_IMAGE:?PROVIDER_IMAGE is not set}
+    container_name: omni-infra-provider-vergeos
     restart: unless-stopped
+
     environment:
-      OMNI_ENDPOINT: ${OMNI_ENDPOINT}
-      OMNI_SERVICE_ACCOUNT_KEY: ${OMNI_SERVICE_ACCOUNT_KEY}
-      VERGEOS_ENDPOINT: ${VERGEOS_ENDPOINT}
-      VERGEOS_API_KEY: ${VERGEOS_API_KEY}
+      OMNI_ENDPOINT: ${OMNI_ENDPOINT:?OMNI_ENDPOINT is not set}
+      OMNI_SERVICE_ACCOUNT_KEY: ${OMNI_SERVICE_ACCOUNT_KEY:?OMNI_SERVICE_ACCOUNT_KEY is not set}
+      VERGEOS_ENDPOINT: ${VERGEOS_ENDPOINT:?VERGEOS_ENDPOINT is not set}
+      VERGEOS_API_KEY: ${VERGEOS_API_KEY:?VERGEOS_API_KEY is not set}
       TALOS_IMAGE_FACTORY_BASE_URL: ${TALOS_IMAGE_FACTORY_BASE_URL:-https://factory.talos.dev}
+
     command:
-      - --vergeos-insecure-skip-verify
+      - --vergeos-timeout
+      - ${VERGEOS_TIMEOUT:-3m}
+
+    # For a temporary test with an untrusted VergeOS or Omni certificate, add:
+    # command:
+    #   - --vergeos-insecure-skip-verify
+    #   - --insecure-skip-verify

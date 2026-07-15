@@ -1,0 +1,13 @@
+# Paste this provider data into an Omni Machine Class backed by the
+# registered VergeOS infrastructure provider.
+cluster_id: 1
+vnet_id: 42
+architecture: amd64
+cores: 4
+memory: 8192
+disk_size: 32
+preferred_tier: "3"
+cpu_type: host
+disk_interface: virtio-scsi
+network_interface: virtio
+uefi: true

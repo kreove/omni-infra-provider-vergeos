@@ -1,0 +1,21 @@
+kind: Cluster
+name: vergeos-example
+kubernetes:
+  # Replace with a version supported by your Omni instance.
+  version: v1.36.1
+talos:
+  # Replace with a version supported by your Omni instance.
+  version: v1.13.2
+systemExtensions:
+  - siderolabs/hello-world-service
+---
+kind: ControlPlane
+machineClass:
+  name: vergeos-control-plane
+  size: 3
+---
+kind: Workers
+name: general
+machineClass:
+  name: vergeos-workers
+  size: 3

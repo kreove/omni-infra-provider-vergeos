@@ -7,8 +7,7 @@ WORKDIR /src
 COPY go.mod ./
 RUN go mod download
 
-# go.sum was not included in the alpha archive. Running tidy after copying the
-# source resolves the complete module graph and generates the required sums.
+# Resolve and verify the complete module graph after copying the source.
 COPY . .
 # Fail clearly if the local provider packages were omitted from the build context.
 RUN test "$(go list -m)" = "omni-infra-provider-vergeos" \

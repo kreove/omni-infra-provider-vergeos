@@ -10,9 +10,9 @@ metadata:
   namespace: omni-infra-provider-vergeos
 type: Opaque
 stringData:
-  OMNI_ENDPOINT: https://your-account.omni.siderolabs.io/
+  OMNI_ENDPOINT: https://omni.example.com
   OMNI_SERVICE_ACCOUNT_KEY: replace-me
-  VERGEOS_ENDPOINT: https://vergeos.example.internal
+  VERGEOS_ENDPOINT: https://vergeos.example.com
   VERGEOS_API_KEY: replace-me
 ---
 apiVersion: apps/v1
@@ -34,9 +34,8 @@ spec:
     spec:
       containers:
         - name: provider
-          image: ghcr.io/your-org/omni-infra-provider-vergeos:alpha
-          args:
-            - --vergeos-insecure-skip-verify
+          image: ghcr.io/OWNER/omni-infra-provider-vergeos:VERSION
+          imagePullPolicy: IfNotPresent
           env:
             - name: TALOS_IMAGE_FACTORY_BASE_URL
               value: https://factory.talos.dev
@@ -49,4 +48,11 @@ spec:
               memory: 64Mi
             limits:
               memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
       terminationGracePeriodSeconds: 30

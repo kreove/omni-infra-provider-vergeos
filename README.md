@@ -1,70 +1,102 @@
 # Omni Infrastructure Provider for VergeOS
-> **v0.2 build fix:** internal Go imports now use the local module path `omni-infra-provider-vergeos`, preventing `go mod tidy` from trying to fetch provider packages remotely.
 
-Alpha Sidero Omni infrastructure provider that creates and removes Talos VMs on VergeOS. The provider follows the lifecycle pattern of Sidero Labs' KubeVirt provider and uses the official VergeOS Go SDK.
+A community infrastructure provider that lets [Sidero Omni](https://docs.siderolabs.com/omni/) create, scale, and delete [Talos Linux](https://www.talos.dev/) virtual machines on [VergeOS](https://docs.verge.io/).
 
-This version adds automatic Talos Image Factory imports and a shared image cache in VergeOS.
+> [!IMPORTANT]
+> This project is community maintained and is not an official Sidero Labs or Verge.io product. It is currently an **alpha release**. Test it in a non-production environment before relying on it for critical clusters.
 
-## Provisioning flow
+## Features
 
-For each Omni `MachineRequest`, the provider:
+- Dynamic VM provisioning from Omni Machine Requests
+- Clean scale-up, scale-down, and deprovisioning
+- Automatic Talos Image Factory downloads performed directly by VergeOS
+- Image caching by Talos version, architecture, and Omni schematic
+- Omni-controlled system extensions and Talos versions
+- Optional use of an existing VergeOS image file
+- UEFI, NoCloud, VirtIO networking, and configurable boot storage
+- Docker Compose and Kubernetes deployment examples
+- API-key or username/password authentication to VergeOS
 
-1. Validates the MachineClass data.
-2. Generates and records the Omni Talos schematic ID and Talos version.
-3. Validates the target VergeOS cluster and VNET.
-4. Resolves a manual `image_file_id`, or builds the exact Image Factory QCOW2 URL.
-5. Reuses an existing cached VergeOS file or asks VergeOS to import it directly from Image Factory.
-6. Waits until VergeOS reports a non-zero file size.
-7. Creates the VM, imports the shared image into a per-VM boot disk, adds the NIC, injects Omni join configuration through NoCloud, and powers on the VM.
+## How it works
 
-When Omni deprovisions a machine, the provider removes its NICs, drives, and VM. Shared cached Talos files are preserved for future machines.
-
-## Automatic image cache
-
-When `image_file_id` is omitted, the provider builds an image URL from:
-
-- Omni schematic ID
-- Talos version selected by Omni
-- MachineClass architecture
-- `TALOS_IMAGE_FACTORY_BASE_URL`
-
-Example URL:
-
-```text
-https://factory.talos.dev/image/<schematic>/v1.12.4/nocloud-amd64.qcow2
+```mermaid
+flowchart LR
+    A[Omni Machine Request] --> B[VergeOS provider]
+    B --> C{Cached Talos image?}
+    C -- No --> D[VergeOS imports QCOW2 from Image Factory]
+    C -- Yes --> E[Create VM]
+    D --> E
+    E --> F[Attach boot disk and VNET]
+    F --> G[Inject Omni join config with NoCloud]
+    G --> H[Boot Talos VM]
+    H --> I[Machine connects to Omni]
 ```
 
-The complete URL is SHA-256 hashed into a deterministic VergeOS filename such as:
+Omni selects the Talos version and resolves the applicable system extensions into an Image Factory schematic. The provider converts that schematic into a `nocloud-amd64.qcow2` URL, asks VergeOS to import it, caches the file, and uses it as the source for each VM boot disk.
 
-```text
-omni-talos-5de8191a1f041eec6ef1fc31.qcow2
+When Omni no longer needs a machine, the provider powers it off and removes its NICs, drives, and VM. Shared cached Talos images are retained for reuse.
+
+## Requirements
+
+- An Omni instance with administrator access
+- A VergeOS environment reachable from the provider container
+- Docker or Kubernetes to run the provider
+- A dedicated VergeOS API user and API key
+- DNS and HTTPS access from VergeOS to the configured Talos Image Factory
+- Network access from provisioned Talos VMs to the Omni endpoints required by your deployment
+- `amd64` virtualization hosts
+
+The provider currently supports `amd64` only.
+
+## Quick start
+
+### 1. Register the provider in Omni
+
+The service-account name must match the provider ID. The default provider ID is `vergeos`.
+
+```bash
+omnictl infraprovider create vergeos
 ```
 
-Machines using the same schematic, Talos version, architecture, and factory reuse the same file. A different Talos version or extension set produces a different cache entry.
+Save the returned `OMNI_ENDPOINT` and `OMNI_SERVICE_ACCOUNT_KEY` values.
 
-The download is performed by VergeOS, not by the provider container. VergeOS therefore needs DNS and outbound HTTPS access to the configured Image Factory.
+You can also create the provider from **Settings → Infra Providers** in the Omni UI.
 
-## Manual image override
+### 2. Create a VergeOS API key
 
-`image_file_id` remains supported. Set it to an existing VergeOS Files ID to bypass automatic importing:
+Create a dedicated VergeOS user, grant only the permissions required by the provider, and create an API key for that user. See [Installation](docs/installation.md#2-create-a-vergeos-service-account-and-api-key) for the required operations.
 
-```yaml
-cluster_id: 1
-vnet_id: 42
-image_file_id: 123
-architecture: amd64
-cores: 4
-memory: 8192
-disk_size: 32
-preferred_tier: "3"
-disk_interface: virtio-scsi
-network_interface: virtio
-uefi: true
+### 3. Configure the provider
+
+```bash
+cp deploy/example.env deploy/.env
+chmod 600 deploy/.env
 ```
 
-## Recommended MachineClass
+Edit `deploy/.env`:
 
-Automatic image mode:
+```dotenv
+PROVIDER_IMAGE=ghcr.io/OWNER/omni-infra-provider-vergeos:VERSION
+OMNI_ENDPOINT=https://omni.example.com
+OMNI_SERVICE_ACCOUNT_KEY=replace-me
+VERGEOS_ENDPOINT=https://vergeos.example.com
+VERGEOS_API_KEY=replace-me
+TALOS_IMAGE_FACTORY_BASE_URL=https://factory.talos.dev
+```
+
+### 4. Start the provider
+
+```bash
+cd deploy
+docker compose up -d
+docker compose logs -f omni-infra-provider-vergeos
+```
+
+The provider exposes no listening port. It only makes outbound connections to Omni and VergeOS.
+
+### 5. Create a VergeOS-backed Machine Class
+
+In Omni, create a dynamic Machine Class using the registered VergeOS provider. Paste provider data similar to:
 
 ```yaml
 cluster_id: 1
@@ -80,109 +112,98 @@ network_interface: virtio
 uefi: true
 ```
 
-`image_file_id` is intentionally absent.
+Do not set `image_file_id` when you want automatic Image Factory integration.
 
-## Configuration
+### 6. Create a cluster
 
-Required:
-
-```dotenv
-OMNI_ENDPOINT=https://omni.example.internal
-OMNI_SERVICE_ACCOUNT_KEY=...
-VERGEOS_ENDPOINT=https://verge.example.internal
-VERGEOS_API_KEY=...
-```
-
-Optional:
-
-```dotenv
-TALOS_IMAGE_FACTORY_BASE_URL=https://factory.talos.dev
-```
-
-The default Image Factory URL is `https://factory.talos.dev`.
-
-Available flags include:
-
-```text
---image-factory-base-url
---vergeos-insecure-skip-verify
---insecure-skip-verify
-```
-
-## Docker Compose
+Reference the Machine Class from the Omni UI or a cluster template:
 
 ```yaml
-services:
-  omni-infra-provider-vergeos:
-    image: kreove/omni-infra-provider-vergeos:latest
-    restart: unless-stopped
-    environment:
-      OMNI_ENDPOINT: ${OMNI_ENDPOINT}
-      OMNI_SERVICE_ACCOUNT_KEY: ${OMNI_VERGEOS_SERVICE_ACCOUNT_KEY}
-      VERGEOS_ENDPOINT: ${VERGEOS_ENDPOINT}
-      VERGEOS_API_KEY: ${VERGEOS_API_KEY}
-      TALOS_IMAGE_FACTORY_BASE_URL: https://factory.talos.dev
-    command:
-      - --vergeos-insecure-skip-verify
+kind: Cluster
+name: vergeos-example
+kubernetes:
+  version: v1.36.1
+talos:
+  version: v1.13.2
+systemExtensions:
+  - siderolabs/hello-world-service
+---
+kind: ControlPlane
+machineClass:
+  name: vergeos-control-plane
+  size: 3
+---
+kind: Workers
+name: workers
+machineClass:
+  name: vergeos-workers
+  size: 3
 ```
 
-Rebuild after replacing the source:
+Validate and apply it:
 
 ```bash
-docker build --no-cache \
-  -t kreove/omni-infra-provider-vergeos:latest \
-  .
+omnictl cluster template validate -f cluster.yaml
+omnictl cluster template sync -f cluster.yaml --verbose
+omnictl cluster template status -f cluster.yaml
 ```
 
-Then recreate the provider:
+Use Talos and Kubernetes versions supported by your Omni release. The versions above are examples, not release requirements.
 
-```bash
-docker compose up -d --force-recreate omni-infra-provider-vergeos
-docker compose logs -f omni-infra-provider-vergeos
-```
+## System extensions and image selection
 
-## Expected first-image logs
+You normally do **not** select a fixed installation image in VergeOS. Configure `systemExtensions` in Omni instead. Omni generates a new schematic whenever the Talos version, extensions, or image-affecting configuration changes. The provider then imports or reuses the exact QCOW2 required by that schematic.
 
-```text
-started Talos image import
-waiting for Talos image import
-created VergeOS VM
-machine is running
-```
+See [Images and system extensions](docs/images-and-extensions.md).
 
-Subsequent machines using the same image should skip the import and proceed directly to VM provisioning.
+## Documentation
 
-## Failed or stuck imports
+- [Installation](docs/installation.md)
+- [Configuration reference](docs/configuration.md)
+- [Using the provider](docs/usage.md)
+- [Images and system extensions](docs/images-and-extensions.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Architecture and lifecycle](docs/architecture.md)
+- [Compatibility and limitations](docs/compatibility.md)
+- [Development and releases](docs/development.md)
+- [Support](SUPPORT.md)
+- [Security policy](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
 
-The current VergeOS SDK file model does not expose a dedicated import status. This provider treats a file as ready when its `filesize` becomes greater than zero.
-
-If a failed import leaves a zero-size `omni-talos-*.qcow2` entry, remove that file manually from VergeOS and retry the Omni machine request. Do not delete cached files that are referenced by VM drives.
-
-## VergeOS permissions
-
-The API key needs:
-
-- Read access to clusters and VNETs.
-- Read and create access to Files for automatic image mode.
-- Create, read, and delete access to VMs, VM drives, and VM NICs.
-- Permission to power VMs on and off.
-
-The provider does not delete shared cached image files.
-
-## Build
+## Building from source
 
 ```bash
 docker build --pull --no-cache \
-  -t omni-infra-provider-vergeos:autoimage \
+  -t omni-infra-provider-vergeos:local \
   .
 ```
 
-The Dockerfile runs `go mod tidy`, `go mod verify`, and `go build` with Go 1.26.2.
+Or use Go directly:
 
-## Source layout
+```bash
+go mod tidy
+go test ./...
+go build -o _out/omni-infra-provider-vergeos \
+  ./cmd/omni-infra-provider-vergeos
+```
 
-- `cmd/omni-infra-provider-vergeos/main.go`: startup, credentials, and Image Factory configuration.
-- `internal/pkg/provider/provision.go`: machine lifecycle steps.
-- `internal/pkg/provider/image.go`: Image Factory URL creation, VergeOS import, and cache reconciliation.
-- `internal/pkg/provider/data`: MachineClass data and JSON schema.
-- `internal/pkg/provider/resources`: provider state stored in Omni/COSI.
+The required Go version is declared in `go.mod`.
+
+## Release status
+
+The following lifecycle has been validated in a live environment:
+
+- VM creation from Omni
+- Automatic registration with Omni
+- Scale-up
+- Scale-down
+- Complete removal of VM NICs, drives, and VM objects
+- Automatic Image Factory import and cache reuse
+
+Review [Compatibility and limitations](docs/compatibility.md) before production use.
+
+## License
+
+This project is licensed under the [Mozilla Public License 2.0](LICENSE).
+
+The provider follows patterns from the Sidero Labs KubeVirt infrastructure provider and uses the official VergeOS Go SDK. See [NOTICE.md](NOTICE.md) for attribution.
