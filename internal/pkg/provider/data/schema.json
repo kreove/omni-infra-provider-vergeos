@@ -1,0 +1,74 @@
+{
+  "type": "object",
+  "properties": {
+    "cluster_id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "VergeOS cluster ID where VMs are created"
+    },
+    "vnet_id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "VergeOS VNET ID attached to the VM"
+    },
+    "image_file_id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "VergeOS Files ID of a pre-imported Talos nocloud-amd64.qcow2 image"
+    },
+    "cores": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 4
+    },
+    "memory": {
+      "type": "integer",
+      "minimum": 2048,
+      "default": 8192,
+      "description": "RAM in MiB"
+    },
+    "architecture": {
+      "enum": ["amd64"],
+      "default": "amd64"
+    },
+    "disk_size": {
+      "type": "integer",
+      "minimum": 5,
+      "default": 32,
+      "description": "Boot disk size in GiB"
+    },
+    "preferred_tier": {
+      "type": "string",
+      "description": "Optional VergeOS storage tier, normally 1 through 5"
+    },
+    "cpu_type": {
+      "type": "string",
+      "description": "Optional CPU model; leave empty to use the VergeOS default"
+    },
+    "machine_type": {
+      "type": "string",
+      "description": "Optional QEMU machine type; leave empty for the VergeOS default"
+    },
+    "disk_interface": {
+      "enum": ["virtio-scsi", "virtio", "nvme", "ahci"],
+      "default": "virtio-scsi"
+    },
+    "network_interface": {
+      "enum": ["virtio", "e1000", "e1000e", "vmxnet3"],
+      "default": "virtio"
+    },
+    "uefi": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "cluster_id",
+    "vnet_id",
+    "image_file_id",
+    "cores",
+    "memory",
+    "architecture",
+    "disk_size"
+  ]
+}

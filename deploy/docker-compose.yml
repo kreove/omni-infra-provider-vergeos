@@ -1,0 +1,12 @@
+services:
+  omni-infra-provider-vergeos:
+    build:
+      context: ..
+    restart: unless-stopped
+    environment:
+      OMNI_ENDPOINT: ${OMNI_ENDPOINT}
+      OMNI_SERVICE_ACCOUNT_KEY: ${OMNI_SERVICE_ACCOUNT_KEY}
+      VERGEOS_ENDPOINT: ${VERGEOS_ENDPOINT}
+      VERGEOS_API_KEY: ${VERGEOS_API_KEY}
+    command:
+      - --vergeos-insecure-skip-verify

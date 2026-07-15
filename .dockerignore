@@ -1,0 +1,6 @@
+.git
+.github
+_out
+*.zip
+*.tar.gz
+deploy/.env
