@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="VergeOS Omni provider">
+  <rect width="96" height="96" rx="18" fill="#18222e"/>
+  <path d="M18 24h16l14 38 14-38h16L56 76H40z" fill="#62d2a2"/>
+  <circle cx="48" cy="48" r="39" fill="none" stroke="#f2f5f7" stroke-width="4" opacity=".75"/>
+</svg>

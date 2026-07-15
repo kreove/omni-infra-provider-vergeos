@@ -22,9 +22,9 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/your-org/omni-infra-provider-vergeos/internal/pkg/provider"
-	"github.com/your-org/omni-infra-provider-vergeos/internal/pkg/provider/data"
-	"github.com/your-org/omni-infra-provider-vergeos/internal/pkg/provider/meta"
+	"omni-infra-provider-vergeos/internal/pkg/provider"
+	"omni-infra-provider-vergeos/internal/pkg/provider/data"
+	"omni-infra-provider-vergeos/internal/pkg/provider/meta"
 )
 
 //go:embed data/icon.svg

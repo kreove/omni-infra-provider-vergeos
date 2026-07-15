@@ -7,7 +7,7 @@ package provider
 import (
 	"testing"
 
-	"github.com/your-org/omni-infra-provider-vergeos/internal/pkg/provider/data"
+	"omni-infra-provider-vergeos/internal/pkg/provider/data"
 )
 
 func TestApplyDefaults(t *testing.T) {

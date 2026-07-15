@@ -1,4 +1,5 @@
 # Omni Infrastructure Provider for VergeOS
+> **v0.2 build fix:** internal Go imports now use the local module path `omni-infra-provider-vergeos`, preventing `go mod tidy` from trying to fetch provider packages remotely.
 
 Alpha Sidero Omni infrastructure provider that creates and removes Talos VMs on VergeOS. The provider follows the lifecycle pattern of Sidero Labs' KubeVirt provider and uses the official VergeOS Go SDK.
 

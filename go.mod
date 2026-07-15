@@ -1,4 +1,4 @@
-module github.com/your-org/omni-infra-provider-vergeos
+module omni-infra-provider-vergeos
 
 go 1.26.2
 

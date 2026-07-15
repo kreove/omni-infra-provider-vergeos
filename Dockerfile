@@ -10,6 +10,9 @@ RUN go mod download
 # go.sum was not included in the alpha archive. Running tidy after copying the
 # source resolves the complete module graph and generates the required sums.
 COPY . .
+# Fail clearly if the local provider packages were omitted from the build context.
+RUN test "$(go list -m)" = "omni-infra-provider-vergeos" \
+    && go list -find ./internal/pkg/provider/meta ./internal/pkg/provider/resources
 RUN go mod tidy && go mod verify
 RUN go test ./...
 RUN CGO_ENABLED=0 go build \
