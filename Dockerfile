@@ -11,6 +11,7 @@ RUN go mod download
 # source resolves the complete module graph and generates the required sums.
 COPY . .
 RUN go mod tidy && go mod verify
+RUN go test ./...
 RUN CGO_ENABLED=0 go build \
     -trimpath \
     -ldflags="-s -w" \

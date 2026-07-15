@@ -16,7 +16,7 @@ var Schema []byte
 type Data struct {
 	ClusterID        int    `yaml:"cluster_id"`
 	VNetID           int    `yaml:"vnet_id"`
-	ImageFileID      int    `yaml:"image_file_id"`
+	ImageFileID      int    `yaml:"image_file_id,omitempty"`
 	Architecture     string `yaml:"architecture"`
 	Cores            int    `yaml:"cores"`
 	Memory           uint64 `yaml:"memory"`

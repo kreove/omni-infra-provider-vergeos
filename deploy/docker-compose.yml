@@ -8,5 +8,6 @@ services:
       OMNI_SERVICE_ACCOUNT_KEY: ${OMNI_SERVICE_ACCOUNT_KEY}
       VERGEOS_ENDPOINT: ${VERGEOS_ENDPOINT}
       VERGEOS_API_KEY: ${VERGEOS_API_KEY}
+      TALOS_IMAGE_FACTORY_BASE_URL: ${TALOS_IMAGE_FACTORY_BASE_URL:-https://factory.talos.dev}
     command:
       - --vergeos-insecure-skip-verify

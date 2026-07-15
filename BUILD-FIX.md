@@ -1,19 +1,18 @@
-# Alpha 2 build fix
+# Container build
 
-The original alpha archive did not contain `go.sum`. The Docker build therefore
-stopped with `missing go.sum entry` errors.
-
-The Dockerfile now runs:
+The source archive does not ship a generated `go.sum`. The Dockerfile resolves and verifies the module graph inside the build stage before testing and compiling:
 
 ```sh
 go mod tidy
 go mod verify
+go test ./...
+go build ...
 ```
-
-before compiling the provider.
 
 Build with:
 
 ```sh
-docker build --pull --no-cache -t omni-infra-provider-vergeos:alpha2 .
+docker build --pull --no-cache \
+  -t omni-infra-provider-vergeos:autoimage \
+  .
 ```

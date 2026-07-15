@@ -37,6 +37,9 @@ spec:
           image: ghcr.io/your-org/omni-infra-provider-vergeos:alpha
           args:
             - --vergeos-insecure-skip-verify
+          env:
+            - name: TALOS_IMAGE_FACTORY_BASE_URL
+              value: https://factory.talos.dev
           envFrom:
             - secretRef:
                 name: provider-credentials

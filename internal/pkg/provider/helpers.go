@@ -23,8 +23,8 @@ func validateProviderData(value data.Data) error {
 		return fmt.Errorf("vnet_id must be greater than zero")
 	}
 
-	if value.ImageFileID < 1 {
-		return fmt.Errorf("image_file_id must be greater than zero")
+	if value.ImageFileID < 0 {
+		return fmt.Errorf("image_file_id cannot be negative")
 	}
 
 	if value.Architecture != "amd64" {

@@ -50,3 +50,24 @@ func TestNoCloudMetaData(t *testing.T) {
 		t.Fatalf("got %q, want %q", got, want)
 	}
 }
+
+func TestValidateProviderDataAllowsAutomaticImage(t *testing.T) {
+	t.Parallel()
+
+	uefi := true
+	value := data.Data{
+		ClusterID:        1,
+		VNetID:           2,
+		Architecture:     "amd64",
+		Cores:            2,
+		Memory:           4096,
+		DiskSize:         20,
+		DiskInterface:    "virtio-scsi",
+		NetworkInterface: "virtio",
+		UEFI:             &uefi,
+	}
+
+	if err := validateProviderData(value); err != nil {
+		t.Fatalf("automatic image mode should be valid: %v", err)
+	}
+}

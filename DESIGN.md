@@ -4,11 +4,12 @@
 |---|---|
 | Validate Kubernetes resource name | Validate Omni request name and MachineClass values |
 | Generate Image Factory schematic | Same Omni `GenerateSchematicID` call |
-| CDI imports Image Factory QCOW2 | Validate a configured shared VergeOS Files ID |
-| Clone DataVolume into per-VM PVC | Create `machine_drives` entry with `media=import` |
-| Create VirtualMachine | Create VergeOS `vms` entry |
-| CloudInitNoCloud volume | Inline VergeOS `cloudinit_files` with Omni join config, metadata, and network config |
-| Default pod network interface | Create `machine_nics` entry on selected VNET |
+| CDI imports Image Factory QCOW2 | VergeOS Files imports the exact QCOW2 URL server-side |
+| Reuse shared source DataVolume | Reuse a deterministic `omni-talos-*.qcow2` VergeOS file |
+| Clone DataVolume into per-VM PVC | Create a VM drive with `media=import` from the shared file |
+| Create VirtualMachine | Create a VergeOS `vms` entry |
+| CloudInitNoCloud volume | Inline VergeOS cloud-init files with Omni join config, metadata, and network config |
+| Default pod network interface | Create a VM NIC on the selected VNET |
 | Set VM running | Invoke VergeOS VM power-on action |
 | Delete VirtualMachine | Power off; delete NICs, drives, and VM |
 
@@ -17,10 +18,14 @@
 VergeOS exposes two identifiers for a VM:
 
 - The VM row `$key`, used for VM reads, power actions, and deletion.
-- The internal `machine` ID, used by `machine_drives` and `machine_nics`.
+- The internal `machine` ID, used by VM drives and VM NICs.
 
 The provider intentionally keeps these separate.
 
-## Image strategy
+## Image cache identity
 
-The shared VergeOS Files object is never deleted by machine deprovisioning. Each VM receives its own imported/resized boot disk. Automatic Image Factory URL ingestion should be implemented as a separate image resolver so it can poll VergeOS import tasks without complicating machine lifecycle reconciliation.
+The source URL contains the Omni schematic ID, Talos version, and architecture. The provider hashes that complete URL and uses the first 96 bits of SHA-256 in the VergeOS filename. The full URL remains in the VergeOS file metadata and is checked when reusing a cache entry.
+
+## Image ownership
+
+Shared VergeOS Files objects are not owned by an individual machine request and are never deleted during machine deprovisioning. Every VM receives its own imported/resized boot drive. Image garbage collection must therefore be a separate operation that verifies no drive references the file.

@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/siderolabs/omni/client/pkg/infra/provision"
@@ -27,12 +28,17 @@ const (
 
 // Provisioner provisions Talos VMs in VergeOS.
 type Provisioner struct {
-	client *vergeos.Client
+	client              *vergeos.Client
+	imageFactoryBaseURL string
+	imageLocks          sync.Map
 }
 
 // NewProvisioner creates a VergeOS provisioner.
-func NewProvisioner(client *vergeos.Client) *Provisioner {
-	return &Provisioner{client: client}
+func NewProvisioner(client *vergeos.Client, imageFactoryBaseURL string) *Provisioner {
+	return &Provisioner{
+		client:              client,
+		imageFactoryBaseURL: imageFactoryBaseURL,
+	}
 }
 
 // ProvisionSteps implements infra.Provisioner.
@@ -84,12 +90,26 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				return fmt.Errorf("failed to resolve VergeOS VNET %d: %w", providerData.VNetID, err)
 			}
 
-			image, err := p.client.Files.Get(ctx, providerData.ImageFileID)
-			if err != nil {
-				return fmt.Errorf("failed to resolve VergeOS image file %d: %w", providerData.ImageFileID, err)
+			return nil
+		}),
+		provision.NewStep("ensureImage", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
+			var providerData data.Data
+			if err := pctx.UnmarshalProviderData(&providerData); err != nil {
+				return err
 			}
 
-			pctx.State.TypedSpec().Value.VolumeId = strconv.Itoa(image.ID.Int())
+			applyDefaults(&providerData)
+
+			imageID, ready, err := p.ensureTalosImage(ctx, logger, pctx, providerData)
+			if err != nil {
+				return err
+			}
+
+			if !ready {
+				return provision.NewRetryInterval(10 * time.Second)
+			}
+
+			pctx.State.TypedSpec().Value.VolumeId = strconv.Itoa(imageID)
 
 			return nil
 		}),
@@ -133,7 +153,12 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				return err
 			}
 
-			if err = p.ensureBootDisk(ctx, machineID, providerData); err != nil {
+			imageFileID, err := strconv.Atoi(pctx.State.TypedSpec().Value.VolumeId)
+			if err != nil || imageFileID < 1 {
+				return fmt.Errorf("invalid VergeOS image file ID %q", pctx.State.TypedSpec().Value.VolumeId)
+			}
+
+			if err = p.ensureBootDisk(ctx, machineID, imageFileID, providerData); err != nil {
 				return err
 			}
 
@@ -214,7 +239,7 @@ func (p *Provisioner) createVM(
 	return vm, nil
 }
 
-func (p *Provisioner) ensureBootDisk(ctx context.Context, machineID int, providerData data.Data) error {
+func (p *Provisioner) ensureBootDisk(ctx context.Context, machineID, imageFileID int, providerData data.Data) error {
 	drive, err := p.client.VMDrives.GetByName(ctx, machineID, bootDiskName)
 	if err == nil {
 		if drive.Status == "importing" {
@@ -236,7 +261,7 @@ func (p *Provisioner) ensureBootDisk(ctx context.Context, machineID int, provide
 		Description:   "Talos boot disk managed by Sidero Omni",
 		Interface:     providerData.DiskInterface,
 		Media:         "import",
-		File:          providerData.ImageFileID,
+		File:          imageFileID,
 		SizeGB:        providerData.DiskSize,
 		PreferredTier: providerData.PreferredTier,
 	})

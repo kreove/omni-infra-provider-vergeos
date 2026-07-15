@@ -13,8 +13,9 @@
     },
     "image_file_id": {
       "type": "integer",
-      "minimum": 1,
-      "description": "VergeOS Files ID of a pre-imported Talos nocloud-amd64.qcow2 image"
+      "minimum": 0,
+      "description": "Optional existing VergeOS Files ID. Use 0 or leave unset to import and cache the required image automatically from Talos Image Factory.",
+      "default": 0
     },
     "cores": {
       "type": "integer",
@@ -28,7 +29,9 @@
       "description": "RAM in MiB"
     },
     "architecture": {
-      "enum": ["amd64"],
+      "enum": [
+        "amd64"
+      ],
       "default": "amd64"
     },
     "disk_size": {
@@ -50,11 +53,21 @@
       "description": "Optional QEMU machine type; leave empty for the VergeOS default"
     },
     "disk_interface": {
-      "enum": ["virtio-scsi", "virtio", "nvme", "ahci"],
+      "enum": [
+        "virtio-scsi",
+        "virtio",
+        "nvme",
+        "ahci"
+      ],
       "default": "virtio-scsi"
     },
     "network_interface": {
-      "enum": ["virtio", "e1000", "e1000e", "vmxnet3"],
+      "enum": [
+        "virtio",
+        "e1000",
+        "e1000e",
+        "vmxnet3"
+      ],
       "default": "virtio"
     },
     "uefi": {
@@ -65,7 +78,6 @@
   "required": [
     "cluster_id",
     "vnet_id",
-    "image_file_id",
     "cores",
     "memory",
     "architecture",
