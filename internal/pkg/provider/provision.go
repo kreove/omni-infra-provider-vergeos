@@ -17,8 +17,8 @@ import (
 	vergeos "github.com/verge-io/govergeos"
 	"go.uber.org/zap"
 
-	"omni-infra-provider-vergeos/internal/pkg/provider/data"
-	"omni-infra-provider-vergeos/internal/pkg/provider/resources"
+	"github.com/kreove/omni-infra-provider-vergeos/internal/pkg/provider/data"
+	"github.com/kreove/omni-infra-provider-vergeos/internal/pkg/provider/resources"
 )
 
 const (

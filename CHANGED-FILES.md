@@ -2,7 +2,7 @@
 
 Core implementation:
 
-- `cmd/omni-infra-provider-vergeos/main.go`
+- `cmd/github.com/kreove/omni-infra-provider-vergeos/main.go`
 - `internal/pkg/provider/provision.go`
 - `internal/pkg/provider/image.go`
 - `internal/pkg/provider/image_test.go`

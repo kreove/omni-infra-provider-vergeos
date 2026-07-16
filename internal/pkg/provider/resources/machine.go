@@ -12,8 +12,8 @@ import (
 	"github.com/cosi-project/runtime/pkg/resource/typed"
 	"github.com/siderolabs/omni/client/pkg/infra"
 
-	"omni-infra-provider-vergeos/api/specs"
-	providermeta "omni-infra-provider-vergeos/internal/pkg/provider/meta"
+	"github.com/kreove/omni-infra-provider-vergeos/api/specs"
+	providermeta "github.com/kreove/omni-infra-provider-vergeos/internal/pkg/provider/meta"
 )
 
 // NewMachine creates a new provider state resource.

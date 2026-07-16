@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package emuspecs;
 
-option go_package = "omni-infra-provider-vergeos/api/specs";
+option go_package = "github.com/kreove/omni-infra-provider-vergeos/api/specs";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";

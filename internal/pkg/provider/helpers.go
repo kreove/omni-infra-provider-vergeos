@@ -11,7 +11,7 @@ import (
 
 	vergeos "github.com/verge-io/govergeos"
 
-	"omni-infra-provider-vergeos/internal/pkg/provider/data"
+	"github.com/kreove/omni-infra-provider-vergeos/internal/pkg/provider/data"
 )
 
 func validateProviderData(value data.Data) error {

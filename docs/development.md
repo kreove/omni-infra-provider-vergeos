@@ -34,7 +34,7 @@ docker run --rm omni-infra-provider-vergeos:dev --help
 ## Source layout
 
 ```text
-cmd/omni-infra-provider-vergeos/    process startup and flags
+cmd/github.com/kreove/omni-infra-provider-vergeos/    process startup and flags
 internal/pkg/provider/provision.go  machine lifecycle reconciliation
 internal/pkg/provider/image.go      Image Factory URL and cache handling
 internal/pkg/provider/data/         Machine Class data and JSON schema

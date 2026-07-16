@@ -22,9 +22,9 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"omni-infra-provider-vergeos/internal/pkg/provider"
-	"omni-infra-provider-vergeos/internal/pkg/provider/data"
-	"omni-infra-provider-vergeos/internal/pkg/provider/meta"
+	"github.com/kreove/omni-infra-provider-vergeos/internal/pkg/provider"
+	"github.com/kreove/omni-infra-provider-vergeos/internal/pkg/provider/data"
+	"github.com/kreove/omni-infra-provider-vergeos/internal/pkg/provider/meta"
 )
 
 //go:embed data/icon.svg
@@ -69,7 +69,7 @@ var rootCmd = &cobra.Command{
 			vergeos.WithBaseURL(cfg.vergeOSEndpoint),
 			vergeos.WithInsecureTLS(cfg.vergeOSInsecure),
 			vergeos.WithTimeout(cfg.vergeOSTimeout),
-			vergeos.WithUserAgent("omni-infra-provider-vergeos/alpha"),
+			vergeos.WithUserAgent("github.com/kreove/omni-infra-provider-vergeos/alpha"),
 		}
 
 		switch {
