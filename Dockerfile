@@ -10,7 +10,7 @@ RUN go mod download
 # Resolve and verify the complete module graph after copying the source.
 COPY . .
 # Fail clearly if the local provider packages were omitted from the build context.
-RUN test "$(go list -m)" = "omni-infra-provider-vergeos" \
+RUN test "$(go list -m)" = "github.com/kreove/omni-infra-provider-vergeos" \
     && go list -find ./internal/pkg/provider/meta ./internal/pkg/provider/resources
 RUN go mod tidy && go mod verify
 RUN go test ./...
