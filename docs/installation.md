@@ -68,7 +68,7 @@ Use the VergeOS UI/API documentation to identify the relevant objects. Confirm t
 Set the full image reference in `deploy/.env`:
 
 ```dotenv
-PROVIDER_IMAGE=ghcr.io/OWNER/omni-infra-provider-vergeos:VERSION
+PROVIDER_IMAGE=ghcr.io/kreove/omni-infra-provider-vergeos:VERSION
 ```
 
 Pin a release tag or digest in production. Do not rely on `latest` for controlled upgrades.

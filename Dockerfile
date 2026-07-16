@@ -1,19 +1,19 @@
-# syntax=docker/dockerfile:1
-
 FROM golang:1.26.2-alpine AS build
 WORKDIR /src
 
-# Download direct dependencies first so this layer remains cacheable.
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
+RUN go mod verify
 
-# Resolve and verify the complete module graph after copying the source.
 COPY . .
-# Fail clearly if the local provider packages were omitted from the build context.
+
 RUN test "$(go list -m)" = "github.com/kreove/omni-infra-provider-vergeos" \
-    && go list -find ./internal/pkg/provider/meta ./internal/pkg/provider/resources
-RUN go mod tidy && go mod verify
+    && go list -find \
+       ./internal/pkg/provider/meta \
+       ./internal/pkg/provider/resources
+
 RUN go test ./...
+
 RUN CGO_ENABLED=0 go build \
     -trimpath \
     -ldflags="-s -w" \
@@ -21,5 +21,14 @@ RUN CGO_ENABLED=0 go build \
     ./cmd/omni-infra-provider-vergeos
 
 FROM gcr.io/distroless/static-debian12:nonroot
-COPY --from=build /out/omni-infra-provider-vergeos /omni-infra-provider-vergeos
+
+LABEL org.opencontainers.image.title="Omni Infrastructure Provider for VergeOS"
+LABEL org.opencontainers.image.description="Community Sidero Omni infrastructure provider for VergeOS"
+LABEL org.opencontainers.image.source="https://github.com/kreove/omni-infra-provider-vergeos"
+LABEL org.opencontainers.image.licenses="MPL-2.0"
+
+COPY --from=build \
+    /out/omni-infra-provider-vergeos \
+    /omni-infra-provider-vergeos
+
 ENTRYPOINT ["/omni-infra-provider-vergeos"]

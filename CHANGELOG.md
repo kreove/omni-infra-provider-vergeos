@@ -10,7 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Public installation, configuration, usage, troubleshooting, architecture, compatibility, and development documentation.
 
-## [0.2.0-alpha] - 2026-07-15
+## [0.2.0-alpha.1] - 2026-07-16
 
 ### Added
 

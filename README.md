@@ -76,7 +76,7 @@ chmod 600 deploy/.env
 Edit `deploy/.env`:
 
 ```dotenv
-PROVIDER_IMAGE=ghcr.io/OWNER/omni-infra-provider-vergeos:VERSION
+PROVIDER_IMAGE=ghcr.io/kreove/omni-infra-provider-vergeos:VERSION
 OMNI_ENDPOINT=https://omni.example.com
 OMNI_SERVICE_ACCOUNT_KEY=replace-me
 VERGEOS_ENDPOINT=https://vergeos.example.com

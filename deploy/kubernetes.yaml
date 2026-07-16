@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: provider
-          image: ghcr.io/OWNER/omni-infra-provider-vergeos:VERSION
+          image: ghcr.io/kreove/omni-infra-provider-vergeos:VERSION
           imagePullPolicy: IfNotPresent
           env:
             - name: TALOS_IMAGE_FACTORY_BASE_URL
