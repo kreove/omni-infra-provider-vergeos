@@ -185,7 +185,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 			logger.Info(
 				"machine is running",
 				zap.String("name", vm.Name),
-				zap.Int("id", vm.ID.Int()),
+				zap.Int("id", vm.ID.Int())
 			)
 
 			return nil
