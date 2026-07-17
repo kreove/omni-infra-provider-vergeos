@@ -27,4 +27,5 @@ type Data struct {
 	DiskInterface    string `yaml:"disk_interface,omitempty"`
 	NetworkInterface string `yaml:"network_interface,omitempty"`
 	UEFI             *bool  `yaml:"uefi,omitempty"`
+	GuestAgent bool `yaml:"guest_agent,omitempty"`
 }

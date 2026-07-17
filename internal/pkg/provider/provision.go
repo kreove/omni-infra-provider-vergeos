@@ -148,6 +148,10 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				pctx.State.TypedSpec().Value.Uuid = vm.UUID
 			}
 
+			if err = p.ensureVMSettings(ctx, vm, providerData); err != nil {
+				return err
+			}
+			
 			machineID, err := vmMachineID(vm)
 			if err != nil {
 				return err
@@ -197,7 +201,7 @@ func (p *Provisioner) createVM(
 	enabled := true
 	serialPort := true
 	secureBoot := false
-	guestAgent := false
+	guestAgent := providerData.GuestAgent
 
 	vm, err := p.client.VMs.Create(ctx, &vergeos.VMCreateRequest{
 		Name:                pctx.GetRequestID(),
@@ -237,6 +241,35 @@ func (p *Provisioner) createVM(
 	}
 
 	return vm, nil
+}
+
+func (p *Provisioner) ensureVMSettings(
+	ctx context.Context,
+	vm *vergeos.VM,
+	providerData data.Data,
+) error {
+	if vm.GuestAgent == providerData.GuestAgent {
+		return nil
+	}
+
+	guestAgent := providerData.GuestAgent
+
+	_, err := p.client.VMs.Update(
+		ctx,
+		vm.ID.Int(),
+		&vergeos.VMUpdateRequest{
+			GuestAgent: &guestAgent,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"failed to update QEMU Guest Agent setting for VM %q: %w",
+			vm.Name,
+			err,
+		)
+	}
+
+	return provision.NewRetryInterval(5 * time.Second)
 }
 
 func (p *Provisioner) ensureBootDisk(ctx context.Context, machineID, imageFileID int, providerData data.Data) error {

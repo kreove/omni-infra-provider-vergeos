@@ -73,6 +73,11 @@
     "uefi": {
       "type": "boolean",
       "default": true
+    },
+    "guest_agent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable the QEMU Guest Agent device in VergeOS. Install the siderolabs/qemu-guest-agent extension in Omni when enabling this option."
     }
   },
   "required": [
