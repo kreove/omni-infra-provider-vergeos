@@ -104,6 +104,15 @@ flowchart LR
 
 Cached Talos files are intentionally not deleted.
 
+## Identifier handling
+
+VergeOS exposes two identifiers for a VM, and the provider deliberately keeps them apart:
+
+- The VM row `$key`, used for VM reads, power actions, and deletion.
+- The internal `machine` ID, used by VM drives and VM NICs.
+
+Passing one where the other is expected fails in ways that do not obviously point at the cause, which is why `vmMachineID` resolves the second explicitly rather than reusing the first.
+
 ## Provider state
 
 The machine state records:
