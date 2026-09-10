@@ -18,10 +18,9 @@ The provider is a stateless reconciliation service with a small amount of machin
 The provider registers these ordered steps:
 
 1. `validateRequest`
-2. `createSchematic`
-3. `ensureTarget`
-4. `ensureImage`
-5. `syncMachine`
+2. `ensureTarget`
+3. `ensureImage`
+4. `syncMachine`
 
 ### `validateRequest`
 
@@ -29,13 +28,6 @@ The provider registers these ordered steps:
 - Decodes provider data.
 - Applies defaults.
 - Validates cluster, VNET, architecture, CPU, memory, disk, and image override values.
-
-### `createSchematic`
-
-- Asks Omni to generate the Image Factory schematic.
-- Adds the serial console kernel argument `console=ttyS0,38400n8`.
-- Records the schematic and Talos version in provider machine state.
-- Requests a join-config workflow rather than embedding Omni connection parameters in the image.
 
 ### `ensureTarget`
 
@@ -45,6 +37,14 @@ The provider registers these ordered steps:
 No VM is created until target validation succeeds.
 
 ### `ensureImage`
+
+Asks Omni for the installation medium: a NoCloud QCOW2 disk image for the requested architecture. Omni ensures the schematic exists on the factory it is configured with and returns a URL, the schematic ID, and a storage key. The serial console kernel argument `console=ttyS0,38400n8` is applied here, and the schematic and Talos version are recorded in provider machine state.
+
+There is no separate `createSchematic` step. Resolving the medium ensures the schematic and reports its ID in the same call, so a separate step would ask Omni for the same medium twice per reconcile — and the URL it returns is short-lived, so it belongs in the step that hands it to VergeOS.
+
+Because VergeOS performs the download itself, the provider asks Omni for a **standalone URL**: one that needs no request headers, since VergeOS has nowhere to put them. If the configured factory still requires headers, the provider fails with an explanation rather than handing VergeOS a URL it cannot fetch.
+
+The cache name comes from the medium's storage key. The URL is never used to derive it, never logged, and never written into the file description: it can carry credentials or a download token, so a name derived from it would change when those rotate and orphan the file already imported under the old name.
 
 Manual mode:
 

@@ -28,17 +28,13 @@ const (
 
 // Provisioner provisions Talos VMs in VergeOS.
 type Provisioner struct {
-	client              *vergeos.Client
-	imageFactoryBaseURL string
-	imageLocks          sync.Map
+	client     *vergeos.Client
+	imageLocks sync.Map
 }
 
 // NewProvisioner creates a VergeOS provisioner.
-func NewProvisioner(client *vergeos.Client, imageFactoryBaseURL string) *Provisioner {
-	return &Provisioner{
-		client:              client,
-		imageFactoryBaseURL: imageFactoryBaseURL,
-	}
+func NewProvisioner(client *vergeos.Client) *Provisioner {
+	return &Provisioner{client: client}
 }
 
 // ProvisionSteps implements infra.Provisioner.
@@ -58,22 +54,6 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 
 			return validateProviderData(providerData)
 		}),
-		provision.NewStep("createSchematic", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
-			schematic, err := pctx.GenerateSchematicID(
-				ctx,
-				logger,
-				provision.WithExtraKernelArgs("console=ttyS0,38400n8"),
-				provision.WithoutConnectionParams(),
-			)
-			if err != nil {
-				return err
-			}
-
-			pctx.State.TypedSpec().Value.Schematic = schematic
-			pctx.State.TypedSpec().Value.TalosVersion = pctx.GetTalosVersion()
-
-			return nil
-		}),
 		provision.NewStep("ensureTarget", func(ctx context.Context, _ *zap.Logger, pctx provision.Context[*resources.Machine]) error {
 			var providerData data.Data
 			if err := pctx.UnmarshalProviderData(&providerData); err != nil {
@@ -92,6 +72,11 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 
 			return nil
 		}),
+		// Resolving the installation medium also ensures the schematic exists
+		// and reports its ID, so there is no separate schematic step. Keeping
+		// one would mean asking Omni for the same medium twice per reconcile,
+		// and the download URL it returns is short-lived -- it belongs in the
+		// step that hands it to VergeOS, not in an earlier one.
 		provision.NewStep("ensureImage", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
 			var providerData data.Data
 			if err := pctx.UnmarshalProviderData(&providerData); err != nil {
@@ -151,7 +136,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 			if err = p.ensureVMSettings(ctx, vm, providerData); err != nil {
 				return err
 			}
-			
+
 			machineID, err := vmMachineID(vm)
 			if err != nil {
 				return err

@@ -36,7 +36,7 @@ docker run --rm omni-infra-provider-vergeos:dev --help
 ```text
 cmd/github.com/kreove/omni-infra-provider-vergeos/    process startup and flags
 internal/pkg/provider/provision.go  machine lifecycle reconciliation
-internal/pkg/provider/image.go      Image Factory URL and cache handling
+internal/pkg/provider/image.go      installation media resolution and cache handling
 internal/pkg/provider/data/         Machine Class data and JSON schema
 internal/pkg/provider/resources/    Omni/COSI provider state resource
 api/specs/                          generated protobuf machine state
@@ -80,7 +80,7 @@ Before publishing a release, validate:
 11. Invalid cluster ID failure
 12. Invalid VNET ID failure
 13. VergeOS permission failure
-14. Failed Image Factory URL/import behavior
+14. Failed image resolution/import behavior
 15. Talos version change
 16. System extension change
 17. Manual image override

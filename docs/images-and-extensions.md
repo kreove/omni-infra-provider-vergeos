@@ -74,11 +74,12 @@ The provider does not need to be restarted when extensions change.
 ## First use of a new schematic
 
 1. Omni creates a Machine Request with a schematic and Talos version.
-2. The provider searches VergeOS Files for the deterministic cache name.
-3. If absent, the provider creates a VergeOS file with the Image Factory URL.
-4. VergeOS downloads the QCOW2 directly.
-5. The provider waits for the file to become ready.
-6. The provider creates the VM boot disk from the cached file.
+2. The provider asks Omni for the installation medium and receives a URL, the schematic ID, and a storage key.
+3. The provider searches VergeOS Files for the cache name derived from that storage key.
+4. If absent, the provider creates a VergeOS file pointing at the URL.
+5. VergeOS downloads the QCOW2 directly.
+6. The provider waits for the file to become ready.
+7. The provider creates the VM boot disk from the cached file.
 
 Subsequent machines skip the download.
 
@@ -101,15 +102,11 @@ Manual mode is useful for testing, disconnected environments, or emergency rollb
 
 ## Self-hosted Image Factory
 
-Set:
+Configure it **in Omni**. The provider has no Image Factory setting of its own: it asks Omni for the installation medium and Omni returns a URL.
 
-```dotenv
-TALOS_IMAGE_FACTORY_BASE_URL=https://factory.example.com
-```
+VergeOS must trust the factory's TLS certificate and be able to resolve and reach the hostname, because **VergeOS performs the download, not the provider**. That is also why the provider asks Omni for a *standalone* URL — one carrying any authentication inside the URL itself, since VergeOS has nowhere to put a request header.
 
-The provider appends `/image/<schematic>/<version>/nocloud-<architecture>.qcow2` to this base URL.
-
-VergeOS must trust the factory's TLS certificate and be able to resolve and reach the hostname. The current provider has no separate Image Factory authentication settings. Private factories that require custom request headers or tokens are not supported by this release.
+A factory that authenticates with a token in the URL therefore works. One that requires request headers does not, and the provider says so explicitly rather than handing VergeOS a URL it cannot fetch.
 
 Official self-hosted Image Factory guide:
 
