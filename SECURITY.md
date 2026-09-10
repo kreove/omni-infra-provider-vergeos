@@ -30,14 +30,21 @@ Store secrets in a container secret store, protected environment file, or Kubern
 
 ## Image Factory URL security
 
-The Image Factory base URL is provider-level configuration rather than Machine Class data. This prevents ordinary Machine Class input from redirecting VergeOS to arbitrary URLs.
+The provider does not accept an Image Factory URL from any source. It asks Omni for the installation medium it needs, and Omni returns the URL. Machine Class data cannot redirect VergeOS to an arbitrary host, and neither can provider configuration.
+
+**The returned URL may contain credentials**, as userinfo or as a download token in the query string, depending on how the factory Omni talks to is configured. It is handed to VergeOS, which performs the download, so it necessarily reaches the VergeOS API — but the provider keeps it out of everywhere else:
+
+- It is never written to a log line.
+- It is never stored in the VergeOS file description, which records the Talos version, architecture and schematic instead. VergeOS shows descriptions to anyone who can list files.
+- It is never used to derive the cached file name, which comes from the medium's storage key.
+
+The provider also asks Omni for a *standalone* URL, so any authentication travels inside the URL rather than in request headers VergeOS cannot send.
 
 Operators should:
 
-- Use HTTPS.
 - Trust only controlled certificate authorities.
 - Restrict outbound access from VergeOS where appropriate.
-- Review private Image Factory access controls.
+- Review private Image Factory access controls in Omni.
 
 ## Least privilege
 

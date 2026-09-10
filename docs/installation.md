@@ -104,7 +104,6 @@ OMNI_ENDPOINT=https://omni.example.com
 OMNI_SERVICE_ACCOUNT_KEY=replace-me
 VERGEOS_ENDPOINT=https://vergeos.example.com
 VERGEOS_API_KEY=replace-me
-TALOS_IMAGE_FACTORY_BASE_URL=https://factory.talos.dev
 VERGEOS_INSECURE_SKIP_VERIFY=false
 OMNI_INSECURE_SKIP_VERIFY=false
 ```
@@ -136,7 +135,7 @@ Confirm the exact environment received by the container:
 ```bash
 docker inspect omni-infra-provider-vergeos \
   --format '{{range .Config.Env}}{{println .}}{{end}}' \
-  | grep -E '^(OMNI_ENDPOINT|VERGEOS_ENDPOINT|TALOS_IMAGE_FACTORY_BASE_URL)='
+  | grep -E '^(OMNI_ENDPOINT|VERGEOS_ENDPOINT)='
 ```
 
 The provider needs outbound connectivity to:

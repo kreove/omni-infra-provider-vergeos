@@ -36,28 +36,6 @@ docker inspect omni-infra-provider-vergeos \
   | grep VERGEOS_ENDPOINT
 ```
 
-## Invalid Image Factory URL containing `$(`
-
-Example:
-
-```text
-invalid Image Factory URL "$(TALOS_IMAGE_FACTORY_BASE_URL:?... )"
-```
-
-Docker Compose uses `${VAR}` syntax, not `$(VAR)`.
-
-Use:
-
-```yaml
-TALOS_IMAGE_FACTORY_BASE_URL: ${TALOS_IMAGE_FACTORY_BASE_URL:-https://factory.talos.dev}
-```
-
-Then recreate the container:
-
-```bash
-docker compose up -d --force-recreate omni-infra-provider-vergeos
-```
-
 ## Provider is not shown as connected in Omni
 
 Check:

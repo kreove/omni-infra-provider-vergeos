@@ -41,7 +41,6 @@ var cfg struct {
 	vergeOSPassword        string
 	vergeOSInsecure        bool
 	vergeOSTimeout         time.Duration
-	imageFactoryBaseURL    string
 	omniInsecureSkipVerify bool
 }
 
@@ -86,10 +85,7 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("failed to create VergeOS client: %w", err)
 		}
 
-		provisioner := provider.NewProvisioner(
-			vergeClient,
-			cfg.imageFactoryBaseURL,
-		)
+		provisioner := provider.NewProvisioner(vergeClient)
 		infrastructureProvider, err := infra.NewProvider(
 			meta.ProviderID,
 			provisioner,
@@ -115,7 +111,6 @@ var rootCmd = &cobra.Command{
 			"starting VergeOS infrastructure provider",
 			zap.String("provider_id", meta.ProviderID),
 			zap.String("vergeos_endpoint", cfg.vergeOSEndpoint),
-			zap.String("image_factory_base_url", cfg.imageFactoryBaseURL),
 		)
 
 		return infrastructureProvider.Run(
@@ -183,12 +178,6 @@ func init() {
 		"vergeos-endpoint",
 		firstNonEmpty(os.Getenv("VERGEOS_ENDPOINT"), os.Getenv("VERGEOS_HOST")),
 		"VergeOS base URL (defaults to VERGEOS_ENDPOINT, then VERGEOS_HOST)",
-	)
-	rootCmd.Flags().StringVar(
-		&cfg.imageFactoryBaseURL,
-		"image-factory-base-url",
-		firstNonEmpty(os.Getenv("TALOS_IMAGE_FACTORY_BASE_URL"), "https://factory.talos.dev"),
-		"Talos Image Factory base URL",
 	)
 	rootCmd.Flags().StringVar(
 		&cfg.vergeOSAPIKey,

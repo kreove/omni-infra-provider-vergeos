@@ -15,7 +15,6 @@ The provider accepts environment variables and equivalent command-line flags. Co
 | `VERGEOS_API_KEY` | `--vergeos-api-key` | One auth method | none | Preferred VergeOS authentication method |
 | `VERGEOS_USERNAME` | `--vergeos-username` | One auth method | none | Username when API-key auth is not used |
 | `VERGEOS_PASSWORD` | `--vergeos-password` | One auth method | none | Password when API-key auth is not used |
-| `TALOS_IMAGE_FACTORY_BASE_URL` | `--image-factory-base-url` | No | `https://factory.talos.dev` | Public or private Image Factory base URL |
 | n/a | `--vergeos-timeout` | No | `3m` | VergeOS API request timeout |
 | n/a | `--vergeos-insecure-skip-verify` | No | `false` | Skip VergeOS TLS verification |
 | n/a | `--insecure-skip-verify` | No | `false` | Skip Omni TLS verification |

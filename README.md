@@ -81,7 +81,6 @@ OMNI_ENDPOINT=https://omni.example.com
 OMNI_SERVICE_ACCOUNT_KEY=replace-me
 VERGEOS_ENDPOINT=https://vergeos.example.com
 VERGEOS_API_KEY=replace-me
-TALOS_IMAGE_FACTORY_BASE_URL=https://factory.talos.dev
 ```
 
 ### 4. Start the provider
